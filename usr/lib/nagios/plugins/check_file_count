@@ -1,0 +1,136 @@
+#!/bin/bash
+#
+# Simple Nagios plugin to monitor the file counts of directorys
+#
+# Author: Sascha Girrulat <sascha.girrulat@sysfive.com>
+#
+#
+SELF=$0
+
+# Exit codes
+STATE_OK=0
+STATE_WARNING=1
+STATE_CRITICAL=2
+STATE_UNKNOWN=3
+STATE_DEPENDENT=4
+STATE=$STATE_OK
+
+# Arguments for file
+FARGS="-maxdepth 1"
+
+# Strings used for the Output
+OUTPUT=""
+RESULT="OK"
+PERFDATA=0
+
+# Threshoulds
+WARN=""
+CRIT=""
+
+usage() {
+cat << EOF
+    Usage: $SELF -d <dir> [options]
+
+        -d | --dir        Where we have to count the files.
+
+    Options:
+
+        -w | --warn       Warning threshold to report a WARN state.
+
+        -c | --crit       Warning threshold to report a CRIT state.
+
+        -f | --PERFDATA   Print out simple performance data.
+
+        -r | --recursive  Search files recursive in all subfolders.
+
+        -h | --help       This help.
+
+EOF
+}
+
+get_standard_output(){
+    local output="$RESULT - There are $FILECOUNT files in dir $CHECKPATH"
+
+    if [ $PERFDATA -eq 1 ]; then
+        output="${output}|'files'=${FILECOUNT};${WARN};${CRIT}"
+    fi
+
+    echo "${output}"
+}
+
+main(){
+    if [ -d "${CHECKPATH}" ]; then
+        local FILECOUNT=$(find "${CHECKPATH}" ${FARGS} -type f | wc -l)
+
+        if [ $? -ne 0 ]; then
+            ERROR="$(find "${CHECKPATH}" ${FARGS} -type f 2>&1)"
+            OUTPUT="ERROR: Unknown error occured; ${ERROR}."
+            STATE=$STATE_UNKNOWN
+        else
+            if [ "$WARN" != "" ]; then
+
+                if [ $FILECOUNT -ge $WARN ]; then
+                    RESULT="WARNING"
+                    STATE=$STATE_WARNING
+                fi
+            fi
+
+            if [ "$CRIT" != "" ]; then
+                if [ $FILECOUNT -ge $CRIT ]; then
+                    RESULT="CRITICAL"
+                    STATE=$STATE_CRITICAL
+                fi
+            fi
+
+            OUTPUT=$(get_standard_output)
+        fi
+    else
+        OUTPUT="ERROR:${CHECKPATH} is not a directory."
+        STATE=$STATE_UNKNOWN
+    fi
+
+    echo $OUTPUT
+}
+
+if [ $# -lt 1 ]; then
+    usage
+    exit $STATE_UNKNOWN
+fi
+
+while  [ $# -gt 0 ]; do
+    case "$1" in
+        -h|--help)
+          usage
+          exit $STATE_OK
+        ;;
+        -d|--dir)
+          CHECKPATH=$2
+          shift 2
+        ;;
+        -w|--warn)
+          WARN=$2
+          shift 2
+        ;;
+        -c|--crit)
+          CRIT=$2
+          shift 2
+        ;;
+        -f|--perfdata)
+          PERFDATA=1
+          shift
+        ;;
+        -r|--recursive)
+          FARGS=""
+          shift
+        ;;
+        *)
+          echo "Unknown argument: $1"
+          usage
+          exit $STATE_UNKNOWN
+        ;;
+    esac
+done
+
+main
+
+exit ${STATE}
