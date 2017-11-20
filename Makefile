@@ -26,7 +26,7 @@ $(RELEASE):
 		--iteration '$(RELEASE)' \
 		-s dir \
 		-t rpm \
-		--license GPLv3
+		--license GPLv3 \
 		-n ${PACKAGE} ./usr/lib/nagios/plugins/
 
 rpm: $(RELEASE)
