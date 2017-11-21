@@ -8,7 +8,7 @@ PLUGIN=$(shell pwd | cut -d'-' -f3)
 PACKAGE=nagios-plugins-$(PLUGIN)
 
 # To use snapshot versions all the time to differ from upstream, set REL=0
-REL=1
+REL=0
 
 ifeq ($(REL),0)
   SNAPSHOT=.$(shell date +%Y%m%d%H%M%S)
