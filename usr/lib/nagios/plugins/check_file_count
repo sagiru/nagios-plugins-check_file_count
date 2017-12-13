@@ -27,6 +27,8 @@ PERFDATA=0
 WARN=""
 CRIT=""
 
+IGNORE_NE=0
+
 usage() {
 cat << EOF
     Usage: $SELF -p <path> [options]
@@ -39,6 +41,7 @@ cat << EOF
         -c | --crit       Warning threshold to report a CRIT state.
         -f | --PERFDATA   Print out simple performance data.
         -r | --recursive  Search files recursive in all subfolders.
+        -i | --ignore-ne  Ignore if destination path does not exist.
         -h | --help       This help.
 
 EOF
@@ -55,7 +58,11 @@ get_standard_output(){
 }
 
 main(){
-    if [ -d "${CHECKPATH}" ]; then
+
+    if [ ! -e "${CHECKPATH}" -a "${IGNORE_NE}" == 1 ]; then
+        FILECOUNT=0
+        OUTPUT=$(get_standard_output)
+    elif [ -d "${CHECKPATH}" ]; then
         local FILECOUNT=$(find "${CHECKPATH}" ${FARGS} -type f | wc -l)
 
         if [ $? -ne 0 ]; then
@@ -117,6 +124,10 @@ while  [ $# -gt 0 ]; do
         ;;
         -r|--recursive)
           FARGS=""
+          shift
+        ;;
+        -i|--ignore-ne)
+          IGNORE_NE=1
           shift
         ;;
         *)
