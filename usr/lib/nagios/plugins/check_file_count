@@ -91,7 +91,7 @@ main(){
             OUTPUT=$(get_standard_output)
         fi
     else
-        OUTPUT="ERROR:${CHECKPATH} is not a directory."
+        OUTPUT="ERROR: ${CHECKPATH} is not a directory."
         STATE=$STATE_UNKNOWN
     fi
 
