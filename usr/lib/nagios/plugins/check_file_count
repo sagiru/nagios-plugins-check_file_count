@@ -39,7 +39,7 @@ cat << EOF
 
         -w | --warn       Warning threshold to report a WARN state.
         -c | --crit       Warning threshold to report a CRIT state.
-        -f | --PERFDATA   Print out simple performance data.
+        -f | --perfdata   Print out simple performance data.
         -r | --recursive  Search files recursive in all subfolders.
         -i | --ignore-ne  Ignore if destination path does not exist.
         -h | --help       This help.
