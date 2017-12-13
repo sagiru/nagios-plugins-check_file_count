@@ -29,9 +29,9 @@ CRIT=""
 
 usage() {
 cat << EOF
-    Usage: $SELF -d <dir> [options]
+    Usage: $SELF -p <path> [options]
 
-        -d | --dir        Where we have to count the files.
+        -p | --path        Where we have to count the files.
 
     Options:
 
@@ -99,7 +99,7 @@ while  [ $# -gt 0 ]; do
           usage
           exit $STATE_OK
         ;;
-        -d|--dir)
+        -p|--path)
           CHECKPATH=$2
           shift 2
         ;;
