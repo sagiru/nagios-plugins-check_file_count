@@ -57,6 +57,23 @@ get_standard_output(){
     echo "${output}"
 }
 
+set_thresholds(){
+  if [ "$WARN" != "" ]; then
+
+      if [ $FILECOUNT -ge $WARN ]; then
+          RESULT="WARNING"
+          STATE=$STATE_WARNING
+      fi
+  fi
+
+  if [ "$CRIT" != "" ]; then
+      if [ $FILECOUNT -ge $CRIT ]; then
+          RESULT="CRITICAL"
+          STATE=$STATE_CRITICAL
+      fi
+  fi
+}
+
 main(){
 
     if [ ! -e "${CHECKPATH}" -a "${IGNORE_NE}" == 1 ]; then
@@ -70,21 +87,7 @@ main(){
             OUTPUT="ERROR: Unknown error occured; ${ERROR}."
             STATE=$STATE_UNKNOWN
         else
-            if [ "$WARN" != "" ]; then
-
-                if [ $FILECOUNT -ge $WARN ]; then
-                    RESULT="WARNING"
-                    STATE=$STATE_WARNING
-                fi
-            fi
-
-            if [ "$CRIT" != "" ]; then
-                if [ $FILECOUNT -ge $CRIT ]; then
-                    RESULT="CRITICAL"
-                    STATE=$STATE_CRITICAL
-                fi
-            fi
-
+            set_thresholds
             OUTPUT=$(get_standard_output)
         fi
     else
