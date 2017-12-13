@@ -27,22 +27,21 @@ PERFDATA=0
 WARN=""
 CRIT=""
 
+IGNORE_NE=0
+
 usage() {
 cat << EOF
-    Usage: $SELF -d <dir> [options]
+    Usage: $SELF -p <path> [options]
 
-        -d | --dir        Where we have to count the files.
+        -p | --path        Where we have to count the files.
 
     Options:
 
         -w | --warn       Warning threshold to report a WARN state.
-
         -c | --crit       Warning threshold to report a CRIT state.
-
-        -f | --PERFDATA   Print out simple performance data.
-
+        -f | --perfdata   Print out simple performance data.
         -r | --recursive  Search files recursive in all subfolders.
-
+        -i | --ignore-ne  Ignore if destination path does not exist.
         -h | --help       This help.
 
 EOF
@@ -58,8 +57,29 @@ get_standard_output(){
     echo "${output}"
 }
 
+set_thresholds(){
+  if [ "$WARN" != "" ]; then
+
+      if [ $FILECOUNT -ge $WARN ]; then
+          RESULT="WARNING"
+          STATE=$STATE_WARNING
+      fi
+  fi
+
+  if [ "$CRIT" != "" ]; then
+      if [ $FILECOUNT -ge $CRIT ]; then
+          RESULT="CRITICAL"
+          STATE=$STATE_CRITICAL
+      fi
+  fi
+}
+
 main(){
-    if [ -d "${CHECKPATH}" ]; then
+
+    if [ ! -e "${CHECKPATH}" -a "${IGNORE_NE}" == 1 ]; then
+        FILECOUNT=0
+        OUTPUT=$(get_standard_output)
+    elif [ -d "${CHECKPATH}" ]; then
         local FILECOUNT=$(find "${CHECKPATH}" ${FARGS} -type f | wc -l)
 
         if [ $? -ne 0 ]; then
@@ -67,25 +87,11 @@ main(){
             OUTPUT="ERROR: Unknown error occured; ${ERROR}."
             STATE=$STATE_UNKNOWN
         else
-            if [ "$WARN" != "" ]; then
-
-                if [ $FILECOUNT -ge $WARN ]; then
-                    RESULT="WARNING"
-                    STATE=$STATE_WARNING
-                fi
-            fi
-
-            if [ "$CRIT" != "" ]; then
-                if [ $FILECOUNT -ge $CRIT ]; then
-                    RESULT="CRITICAL"
-                    STATE=$STATE_CRITICAL
-                fi
-            fi
-
+            set_thresholds
             OUTPUT=$(get_standard_output)
         fi
     else
-        OUTPUT="ERROR:${CHECKPATH} is not a directory."
+        OUTPUT="ERROR: ${CHECKPATH} is not a directory."
         STATE=$STATE_UNKNOWN
     fi
 
@@ -103,7 +109,7 @@ while  [ $# -gt 0 ]; do
           usage
           exit $STATE_OK
         ;;
-        -d|--dir)
+        -p|--path)
           CHECKPATH=$2
           shift 2
         ;;
@@ -121,6 +127,10 @@ while  [ $# -gt 0 ]; do
         ;;
         -r|--recursive)
           FARGS=""
+          shift
+        ;;
+        -i|--ignore-ne)
+          IGNORE_NE=1
           shift
         ;;
         *)
