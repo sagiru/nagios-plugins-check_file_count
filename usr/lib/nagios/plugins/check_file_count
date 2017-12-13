@@ -36,13 +36,9 @@ cat << EOF
     Options:
 
         -w | --warn       Warning threshold to report a WARN state.
-
         -c | --crit       Warning threshold to report a CRIT state.
-
         -f | --PERFDATA   Print out simple performance data.
-
         -r | --recursive  Search files recursive in all subfolders.
-
         -h | --help       This help.
 
 EOF
